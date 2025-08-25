@@ -469,45 +469,7 @@
             
             let auth, db, userId;
 
-            if (firebaseConfig) {
-                try {
-                    const firebaseApp = initializeApp(firebaseConfig);
-                    auth = getAuth(firebaseApp);
-                    db = getFirestore(firebaseApp);
-                    console.log("Firebase initialized successfully.");
-
-                    // Listen for authentication state changes and handle sign-in
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            console.log("User authenticated with UID:", userId);
-                            startDataListener();
-                        } else {
-                            console.log("User is not authenticated. Signing in anonymously.");
-                            try {
-                                if (initialAuthToken) {
-                                    await signInWithCustomToken(auth, initialAuthToken);
-                                } else {
-                                    await signInAnonymously(auth);
-                                }
-                            } catch (error) {
-                                console.error("Authentication error:", error);
-                            }
-                        }
-                        updateView('home');
-                    });
-                } catch (error) {
-                    console.error("Firebase initialization error:", error);
-                    updateView('home');
-                }
-            } else {
-                console.error("Firebase Config not available. App will run without data persistence.");
-                updateView('home');
-            }
-
-            const apiKey = "AIzaSyCOEojjc0rH4I4tFz8thestkU1km8_MxlM";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-
+            // --- Element References ---
             const homeView = document.getElementById('home-view');
             const trainingPlanView = document.getElementById('training-plan-view');
             const nutritionView = document.getElementById('nutrition-view');
@@ -561,7 +523,6 @@
             const timeToDateTime = document.getElementById('time-to-date-time');
             const startDateDisplay = document.getElementById('start-date-display');
 
-            // --- New Nutrition Page Elements ---
             const nutritionChatBox = document.getElementById('nutrition-chat-box');
             const nutritionChatInput = document.getElementById('nutrition-chat-input');
             const nutritionChatSendButton = document.getElementById('nutrition-chat-send');
@@ -584,7 +545,6 @@
             const generateDailyDietButton = document.getElementById('generate-daily-diet-button');
             const saveDailyDietButton = document.getElementById('save-daily-diet-button');
 
-            // --- NEW: Data Upload Elements ---
             const uploadDataInput = document.getElementById('upload-data-input');
             const uploadedDataSection = document.getElementById('uploaded-data-section');
             const dataEditor = document.getElementById('data-editor');
@@ -594,7 +554,6 @@
             let selectedActivityData = null;
             let paceChart;
             
-            // A simple local storage-based state for all plans
             let currentPlans = JSON.parse(localStorage.getItem('currentPlans')) || {};
             let raceNutritionPlans = JSON.parse(localStorage.getItem('raceNutritionPlans')) || {};
             let dailyNutritionPlans = JSON.parse(localStorage.getItem('dailyNutritionPlans')) || {};
@@ -625,30 +584,48 @@
                 parts: [{ text: "Hello! I'm your trail running nutrition coach. What are your dietary needs? Please mention any intolerances, allergies, or personal choices like vegetarian or vegan." }]
             }];
 
-            // --- FIREBASE SETUP ---
-            let dataUnsubscribe = null;
+            const apiKey = "AIzaSyCOEojjc0rH4I4tFz8thestkU1km8_MxlM";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
-            async function startDataListener() {
-                if (!db || !userId) {
-                    console.warn("Firestore or User ID not available for data listener.");
-                    return;
+            // --- Firebase Initialization and Auth State Listener ---
+            if (firebaseConfig) {
+                try {
+                    const firebaseApp = initializeApp(firebaseConfig);
+                    auth = getAuth(firebaseApp);
+                    db = getFirestore(firebaseApp);
+                    console.log("Firebase initialized successfully.");
+
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            console.log("User authenticated with UID:", userId);
+                            startDataListener();
+                            setupEventListeners();
+                            updateView('home');
+                        } else {
+                            console.log("User is not authenticated. Signing in anonymously.");
+                            try {
+                                if (initialAuthToken) {
+                                    await signInWithCustomToken(auth, initialAuthToken);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                            } catch (error) {
+                                console.error("Authentication error:", error);
+                                setupEventListeners();
+                                updateView('home');
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Firebase initialization error:", error);
+                    setupEventListeners();
+                    updateView('home');
                 }
-                if (dataUnsubscribe) {
-                    dataUnsubscribe();
-                }
-                const dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
-                dataUnsubscribe = onSnapshot(dataRef, (doc) => {
-                    if (doc.exists()) {
-                        activitiesData = doc.data().activities || [];
-                    } else {
-                        activitiesData = [];
-                    }
-                    renderDashboardKPIs();
-                    renderActivitiesList();
-                    getPerformanceAssessment();
-                }, (error) => {
-                    console.error("Error fetching Firestore data:", error);
-                });
+            } else {
+                console.error("Firebase Config not available. App will run without data persistence.");
+                setupEventListeners();
+                updateView('home');
             }
 
             const vo2Categories = [
@@ -667,7 +644,6 @@
                 let ngpCount = 0;
                 
                 if (!laps || laps.length === 0) {
-                    // Placeholder NGP if no lap data is available
                     return (Math.random() * 2 + 5).toFixed(2);
                 }
 
@@ -901,7 +877,6 @@
                 timeToDateElevation.textContent = `${timeToDateElevationTotal} m`;
                 timeToDateTime.textContent = formatTime(timeToDateTimeTotal);
 
-                // Update VO2 Max Display (mock value for now, could be dynamic)
                 const vo2Score = 54;
                 document.getElementById('vo2-score').textContent = vo2Score;
                 const category = vo2Categories.find(cat => vo2Score >= cat.score)?.category || 'Very Low';
@@ -1325,246 +1300,260 @@
             }
 
             // --- EVENT LISTENERS ---
-            updateDataButton.addEventListener('click', () => {
-                getPerformanceAssessment();
-            });
-
-            backButton.addEventListener('click', () => {
-                updateView('home');
-            });
-
-            navHomeButton.addEventListener('click', () => {
-                updateView('home');
-            });
-            
-            navPlanButton.addEventListener('click', () => {
-                updateView('plan');
-            });
-
-            navNutritionButton.addEventListener('click', () => {
-                updateView('nutrition');
-            });
-            
-            navSettingsButton.addEventListener('click', () => {
-                updateView('settings');
-            });
-
-            toggleGoalsButton.addEventListener('click', () => toggleSection(toggleGoalsButton, goalsContent, goalsChevron));
-            toggleAssessmentButton.addEventListener('click', () => toggleSection(toggleAssessmentButton, assessmentContentWrapper, assessmentChevron));
-            toggleCurrentPlanButton.addEventListener('click', () => toggleSection(toggleCurrentPlanButton, currentPlanContent, currentPlanChevron));
-            toggleProposedPlanButton.addEventListener('click', () => toggleSection(toggleProposedPlanButton, proposedPlanContent, proposedPlanChevron));
-            toggleRaceNutritionButton.addEventListener('click', () => toggleSection(toggleRaceNutritionButton, raceNutritionContent, raceNutritionChevron));
-            toggleDailyNutritionButton.addEventListener('click', () => toggleSection(toggleDailyNutritionButton, dailyNutritionContent, dailyNutritionChevron));
-
-            refreshPlanButton.addEventListener('click', () => {
-                updateView('plan');
-            });
-
-            coachToneSelect.addEventListener('change', (event) => {
-                localStorage.setItem('coachTone', event.target.value);
-                if (currentPage === 'home') {
+            function setupEventListeners() {
+                updateDataButton.addEventListener('click', () => {
                     getPerformanceAssessment();
-                }
-            });
+                });
 
-            updateStatsButton.addEventListener('click', () => {
-                renderDashboardKPIs();
-            });
+                backButton.addEventListener('click', () => {
+                    updateView('home');
+                });
 
-            savePlanButton.addEventListener('click', () => {
-                const editedContent = planEditor.value;
-                const weekStart = getWeekStartDate(currentWeekOffset).toISOString().split('T')[0];
-                currentPlans[weekStart] = editedContent;
-                localStorage.setItem('currentPlans', JSON.stringify(currentPlans));
-                renderCurrentPlan();
-                toggleSection(toggleProposedPlanButton, proposedPlanContent, proposedPlanChevron);
-                toggleSection(toggleCurrentPlanButton, currentPlanContent, currentPlanChevron);
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                        <p class="text-lg font-semibold mb-4">Plan saved successfully!</p>
-                        <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                    </div>
-                `;
-                document.body.appendChild(messageBox);
-            });
-
-            addToCalendarButton.addEventListener('click', () => {
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm">
-                        <p class="text-sm font-semibold mb-4">To integrate with Google Calendar in a real application, you would need to:</p>
-                        <ul class="list-disc list-inside text-xs text-gray-700 space-y-2 mb-4">
-                            <li>Use Google's OAuth 2.0 to securely authenticate the user.</li>
-                            <li>Request the necessary permissions to access their calendar.</li>
-                            <li>Use the Google Calendar API to programmatically create events based on the workouts in your plan.</li>
-                        </ul>
-                        <p class="text-xs text-gray-500">This functionality cannot be fully demonstrated in this sandboxed environment, but the button represents the logical next step!</p>
-                        <button class="mt-4 bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">Got it</button>
-                    </div>
-                `;
-                document.body.appendChild(messageBox);
-            });
-
-            prevWeekButton.addEventListener('click', () => {
-                currentWeekOffset--;
-                renderCurrentPlan();
-            });
-
-            nextWeekButton.addEventListener('click', () => {
-                currentWeekOffset++;
-                renderCurrentPlan();
-            });
-            
-            nutritionChatSendButton.addEventListener('click', async () => {
-                if (!apiKey) {
-                    appendMessage('gemini', "I can't chat right now. Please add your Gemini API key in the code.");
-                    return;
-                }
-                const userMessage = nutritionChatInput.value.trim();
-                if (userMessage === '') return;
-
-                appendMessage('user', userMessage);
-                nutritionChatInput.value = '';
-
-                chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
-
-                const payload = { contents: chatHistory };
+                navHomeButton.addEventListener('click', () => {
+                    updateView('home');
+                });
                 
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        appendMessage('gemini', text);
-                        chatHistory.push({ role: "model", parts: [{ text: text }] });
+                navPlanButton.addEventListener('click', () => {
+                    updateView('plan');
+                });
+
+                navNutritionButton.addEventListener('click', () => {
+                    updateView('nutrition');
+                });
+                
+                navSettingsButton.addEventListener('click', () => {
+                    updateView('settings');
+                });
+
+                toggleGoalsButton.addEventListener('click', () => toggleSection(toggleGoalsButton, goalsContent, goalsChevron));
+                toggleAssessmentButton.addEventListener('click', () => toggleSection(toggleAssessmentButton, assessmentContentWrapper, assessmentChevron));
+                toggleCurrentPlanButton.addEventListener('click', () => toggleSection(toggleCurrentPlanButton, currentPlanContent, currentPlanChevron));
+                toggleProposedPlanButton.addEventListener('click', () => toggleSection(toggleProposedPlanButton, proposedPlanContent, proposedPlanChevron));
+                toggleRaceNutritionButton.addEventListener('click', () => toggleSection(toggleRaceNutritionButton, raceNutritionContent, raceNutritionChevron));
+                toggleDailyNutritionButton.addEventListener('click', () => toggleSection(toggleDailyNutritionButton, dailyNutritionContent, dailyNutritionChevron));
+
+                refreshPlanButton.addEventListener('click', () => {
+                    updateView('plan');
+                });
+
+                coachToneSelect.addEventListener('change', (event) => {
+                    localStorage.setItem('coachTone', event.target.value);
+                    if (currentPage === 'home') {
+                        getPerformanceAssessment();
                     }
-                } catch (error) {
-                    console.error('Chat error:', error);
-                    appendMessage('gemini', "I'm sorry, I seem to be having a network issue. Please try again.");
-                }
-            });
+                });
 
-            generateRacePlanButton.addEventListener('click', generateRaceNutrition);
-            generateDailyDietButton.addEventListener('click', generateDailyDiet);
+                updateStatsButton.addEventListener('click', () => {
+                    renderDashboardKPIs();
+                });
 
-            saveRacePlanButton.addEventListener('click', () => {
-                raceNutritionPlans.latest = racePlanEditor.value;
-                localStorage.setItem('raceNutritionPlans', JSON.stringify(raceNutritionPlans));
-                renderCurrentNutritionPlans();
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                        <p class="text-lg font-semibold mb-4">Race nutrition plan saved!</p>
-                        <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                    </div>
-                `;
-                document.body.appendChild(messageBox);
-            });
+                savePlanButton.addEventListener('click', () => {
+                    const editedContent = planEditor.value;
+                    const weekStart = getWeekStartDate(currentWeekOffset).toISOString().split('T')[0];
+                    currentPlans[weekStart] = editedContent;
+                    localStorage.setItem('currentPlans', JSON.stringify(currentPlans));
+                    renderCurrentPlan();
+                    toggleSection(toggleProposedPlanButton, proposedPlanContent, proposedPlanChevron);
+                    toggleSection(toggleCurrentPlanButton, currentPlanContent, currentPlanChevron);
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
+                    messageBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p class="text-lg font-semibold mb-4">Plan saved successfully!</p>
+                            <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBox);
+                });
 
-            saveDailyDietButton.addEventListener('click', () => {
-                dailyNutritionPlans.latest = dailyDietEditor.value;
-                localStorage.setItem('dailyNutritionPlans', JSON.stringify(dailyNutritionPlans));
-                renderCurrentNutritionPlans();
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                        <p class="text-lg font-semibold mb-4">Daily diet plan saved!</p>
-                        <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                    </div>
-                `;
-                document.body.appendChild(messageBox);
-            });
+                addToCalendarButton.addEventListener('click', () => {
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
+                    messageBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm">
+                            <p class="text-sm font-semibold mb-4">To integrate with Google Calendar in a real application, you would need to:</p>
+                            <ul class="list-disc list-inside text-xs text-gray-700 space-y-2 mb-4">
+                                <li>Use Google's OAuth 2.0 to securely authenticate the user.</li>
+                                <li>Request the necessary permissions to access their calendar.</li>
+                                <li>Use the Google Calendar API to programmatically create events based on the workouts in your plan.</li>
+                            </ul>
+                            <p class="text-xs text-gray-500">This functionality cannot be fully demonstrated in this sandboxed environment, but the button represents the logical next step!</p>
+                            <button class="mt-4 bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">Got it</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBox);
+                });
 
-            // --- NEW: Data Upload & Save Logic ---
-            uploadDataInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file) {
-                    uploadedDataSection.classList.add('hidden');
-                    return;
-                }
+                prevWeekButton.addEventListener('click', () => {
+                    currentWeekOffset--;
+                    renderCurrentPlan();
+                });
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
+                nextWeekButton.addEventListener('click', () => {
+                    currentWeekOffset++;
+                    renderCurrentPlan();
+                });
+                
+                nutritionChatSendButton.addEventListener('click', async () => {
+                    if (!apiKey) {
+                        appendMessage('gemini', "I can't chat right now. Please add your Gemini API key in the code.");
+                        return;
+                    }
+                    const userMessage = nutritionChatInput.value.trim();
+                    if (userMessage === '') return;
+
+                    appendMessage('user', userMessage);
+                    nutritionChatInput.value = '';
+
+                    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+
+                    const payload = { contents: chatHistory };
+                    
                     try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const jsonActivities = XLSX.utils.sheet_to_json(worksheet);
-
-                        // Map uploaded data to the required schema
-                        const newActivities = jsonActivities.map(row => {
-                            // Assume headers in the Excel file are 'name', 'distance', 'elevation', 'time'
-                            // This is a simplified mapping. Real-world would need more robust header detection.
-                            // I'm also generating mock laps for the chart functionality.
-                            const laps = [];
-                            const distance = parseFloat(row.distance) || 0;
-                            const elevation = parseFloat(row.elevation_gain) || 0;
-                            const time = parseFloat(row.total_time) || 0;
-                            if (distance > 0 && time > 0) {
-                                // Create 5 mock laps to make the chart work
-                                for (let i = 0; i < 5; i++) {
-                                    laps.push({
-                                        distance: distance / 5,
-                                        elevation_gain: elevation / 5,
-                                        moving_time: time / 5
-                                    });
-                                }
-                            }
-                            
-                            return {
-                                name: row.name || 'Unnamed Activity',
-                                date: row.date || new Date().toISOString(),
-                                distance: distance,
-                                total_elevation_gain: elevation,
-                                moving_time: time,
-                                type: row.type || 'Run',
-                                laps: laps
-                            };
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
                         });
-                        
-                        // Populate the editor with a structured JSON string
-                        dataEditor.value = JSON.stringify(newActivities, null, 2);
-                        uploadedDataSection.classList.remove('hidden');
-
+                        const result = await response.json();
+                        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) {
+                            appendMessage('gemini', text);
+                            chatHistory.push({ role: "model", parts: [{ text: text }] });
+                        }
                     } catch (error) {
-                        console.error("Error parsing file:", error);
-                        dataEditor.value = "Error parsing file. Please ensure it is a valid Excel/CSV format with columns for 'name', 'distance', 'elevation_gain', and 'total_time'.";
-                        uploadedDataSection.classList.remove('hidden');
+                        console.error('Chat error:', error);
+                        appendMessage('gemini', "I'm sorry, I seem to be having a network issue. Please try again.");
                     }
-                };
-                reader.readAsArrayBuffer(file);
-            });
+                });
 
-            saveUploadedDataButton.addEventListener('click', async () => {
+                generateRacePlanButton.addEventListener('click', generateRaceNutrition);
+                generateDailyDietButton.addEventListener('click', generateDailyDiet);
+
+                saveRacePlanButton.addEventListener('click', () => {
+                    raceNutritionPlans.latest = racePlanEditor.value;
+                    localStorage.setItem('raceNutritionPlans', JSON.stringify(raceNutritionPlans));
+                    renderCurrentNutritionPlans();
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
+                    messageBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p class="text-lg font-semibold mb-4">Race nutrition plan saved!</p>
+                            <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBox);
+                });
+
+                saveDailyDietButton.addEventListener('click', () => {
+                    dailyNutritionPlans.latest = dailyDietEditor.value;
+                    localStorage.setItem('dailyNutritionPlans', JSON.stringify(dailyNutritionPlans));
+                    renderCurrentNutritionPlans();
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
+                    messageBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p class="text-lg font-semibold mb-4">Daily diet plan saved!</p>
+                            <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBox);
+                });
+
+                uploadDataInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (!file) {
+                        uploadedDataSection.classList.add('hidden');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+                            const jsonActivities = XLSX.utils.sheet_to_json(worksheet);
+
+                            const newActivities = jsonActivities.map(row => {
+                                const laps = [];
+                                const distance = parseFloat(row.distance) || 0;
+                                const elevation = parseFloat(row.elevation_gain) || 0;
+                                const time = parseFloat(row.total_time) || 0;
+                                if (distance > 0 && time > 0) {
+                                    for (let i = 0; i < 5; i++) {
+                                        laps.push({
+                                            distance: distance / 5,
+                                            elevation_gain: elevation / 5,
+                                            moving_time: time / 5
+                                        });
+                                    }
+                                }
+                                
+                                return {
+                                    name: row.name || 'Unnamed Activity',
+                                    date: row.date || new Date().toISOString(),
+                                    distance: distance,
+                                    total_elevation_gain: elevation,
+                                    moving_time: time,
+                                    type: row.type || 'Run',
+                                    laps: laps
+                                };
+                            });
+                            
+                            dataEditor.value = JSON.stringify(newActivities, null, 2);
+                            uploadedDataSection.classList.remove('hidden');
+
+                        } catch (error) {
+                            console.error("Error parsing file:", error);
+                            dataEditor.value = "Error parsing file. Please ensure it is a valid Excel/CSV format with columns for 'name', 'distance', 'elevation_gain', and 'total_time'.";
+                            uploadedDataSection.classList.remove('hidden');
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+
+                saveUploadedDataButton.addEventListener('click', async () => {
+                    if (!db || !userId) {
+                        showDialog('Error', 'Not authenticated. Please try again.');
+                        return;
+                    }
+                    
+                    try {
+                        const parsedData = JSON.parse(dataEditor.value);
+                        if (!Array.isArray(parsedData)) {
+                            throw new Error("Data must be a valid JSON array.");
+                        }
+                        const docRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
+                        await setDoc(docRef, { activities: parsedData });
+                        showDialog('Success', 'Activity data saved successfully!');
+                    } catch (error) {
+                        console.error("Error saving data:", error);
+                        showDialog('Error', `Failed to save data: ${error.message}`);
+                    }
+                });
+            }
+
+            function startDataListener() {
                 if (!db || !userId) {
-                    showDialog('Error', 'Not authenticated. Please try again.');
+                    console.warn("Firestore or User ID not available for data listener.");
                     return;
                 }
-                
-                try {
-                    const parsedData = JSON.parse(dataEditor.value);
-                    if (!Array.isArray(parsedData)) {
-                        throw new Error("Data must be a valid JSON array.");
+                const dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
+                onSnapshot(dataRef, (doc) => {
+                    if (doc.exists()) {
+                        activitiesData = doc.data().activities || [];
+                    } else {
+                        activitiesData = [];
                     }
-                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
-                    await setDoc(docRef, { activities: parsedData });
-                    showDialog('Success', 'Activity data saved successfully!');
-                    // Re-render the dashboard with the new data from the listener
-                } catch (error) {
-                    console.error("Error saving data:", error);
-                    showDialog('Error', `Failed to save data: ${error.message}`);
-                }
-            });
+                    renderDashboardKPIs();
+                    renderActivitiesList();
+                    getPerformanceAssessment();
+                }, (error) => {
+                    console.error("Error fetching Firestore data:", error);
+                });
+            }
 
             function showDialog(title, message) {
                 const messageBox = document.createElement('div');
@@ -1585,7 +1574,6 @@
             const savedTone = getCoachTone();
             coachToneSelect.value = savedTone;
 
-            // Kick off the authentication process on load
             renderFutureGoals();
             renderCurrentPlan();
             renderCurrentNutritionPlans();
