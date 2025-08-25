@@ -7,45 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // Expose Firebase services to the global scope
-        window.firebase = {
-            app: firebaseConfig ? initializeApp(firebaseConfig) : null,
-            auth: firebaseConfig ? getAuth(window.firebase.app) : null,
-            db: firebaseConfig ? getFirestore(window.firebase.app) : null,
-            appId: appId
-        };
-        
-        window.firebase.authenticate = async () => {
-            if (initialAuthToken) {
-                try {
-                    await signInWithCustomToken(window.firebase.auth, initialAuthToken);
-                } catch (error) {
-                    console.error("Error signing in with custom token:", error);
-                    await signInAnonymously(window.firebase.auth);
-                }
-            } else {
-                await signInAnonymously(window.firebase.auth);
-            }
-        };
-
-        window.firebase.onAuthStateChanged = onAuthStateChanged;
-        window.firebase.getFirestore = getFirestore;
-        window.firebase.doc = doc;
-        window.firebase.onSnapshot = onSnapshot;
-        window.firebase.setDoc = setDoc;
-        window.firebase.getDoc = getDoc;
-    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -495,19 +457,54 @@
     </footer>
 
     <script type="module">
-        import {
-            getAuth,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import {
-            getFirestore,
-            doc,
-            onSnapshot,
-            setDoc
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         document.addEventListener('DOMContentLoaded', async function () {
-            // --- Gemini API Setup ---
+            // --- Firebase and Gemini Setup ---
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            
+            let auth, db, userId;
+
+            if (firebaseConfig) {
+                try {
+                    const firebaseApp = initializeApp(firebaseConfig);
+                    auth = getAuth(firebaseApp);
+                    db = getFirestore(firebaseApp);
+                    console.log("Firebase initialized successfully.");
+
+                    // Listen for authentication state changes and handle sign-in
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            console.log("User authenticated with UID:", userId);
+                            startDataListener();
+                        } else {
+                            console.log("User is not authenticated. Signing in anonymously.");
+                            try {
+                                if (initialAuthToken) {
+                                    await signInWithCustomToken(auth, initialAuthToken);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                            } catch (error) {
+                                console.error("Authentication error:", error);
+                            }
+                        }
+                        updateView('home');
+                    });
+                } catch (error) {
+                    console.error("Firebase initialization error:", error);
+                    updateView('home');
+                }
+            } else {
+                console.error("Firebase Config not available. App will run without data persistence.");
+                updateView('home');
+            }
+
             const apiKey = "AIzaSyCOEojjc0rH4I4tFz8thestkU1km8_MxlM";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
@@ -629,29 +626,17 @@
             }];
 
             // --- FIREBASE SETUP ---
-            let db = null;
-            let auth = null;
-            let userId = null;
             let dataUnsubscribe = null;
 
-            window.firebase.onAuthStateChanged(window.firebase.auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    db = window.firebase.db;
-                    auth = window.firebase.auth;
-                    startDataListener();
-                    updateView('home');
-                } else {
-                    console.log("User is not authenticated. Signing in anonymously.");
-                    await window.firebase.authenticate();
-                }
-            });
-
             async function startDataListener() {
+                if (!db || !userId) {
+                    console.warn("Firestore or User ID not available for data listener.");
+                    return;
+                }
                 if (dataUnsubscribe) {
                     dataUnsubscribe();
                 }
-                const dataRef = doc(db, `artifacts/${window.firebase.appId}/users/${userId}/data/activities`);
+                const dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
                 dataUnsubscribe = onSnapshot(dataRef, (doc) => {
                     if (doc.exists()) {
                         activitiesData = doc.data().activities || [];
@@ -1571,7 +1556,7 @@
                     if (!Array.isArray(parsedData)) {
                         throw new Error("Data must be a valid JSON array.");
                     }
-                    const docRef = doc(db, `artifacts/${window.firebase.appId}/users/${userId}/data/activities`);
+                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
                     await setDoc(docRef, { activities: parsedData });
                     showDialog('Success', 'Activity data saved successfully!');
                     // Re-render the dashboard with the new data from the listener
@@ -1601,11 +1586,6 @@
             coachToneSelect.value = savedTone;
 
             // Kick off the authentication process on load
-            if (window.firebase && window.firebase.authenticate) {
-                window.firebase.authenticate();
-            } else {
-                console.error("Firebase is not initialized. Check your script import.");
-            }
             renderFutureGoals();
             renderCurrentPlan();
             renderCurrentNutritionPlans();
