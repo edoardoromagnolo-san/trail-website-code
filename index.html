@@ -110,6 +110,31 @@
             background-color: #f3f4f6;
             align-self: flex-start;
         }
+        /* NEW: Styles for the editable data table */
+        #data-table-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #data-table-container th, #data-table-container td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #data-table-container th {
+            background-color: #f2f2f2;
+            position: sticky; /* Make header sticky for vertical scrolling */
+            top: 0;
+            z-index: 10;
+        }
+        #data-table-container td[contenteditable="true"]:focus {
+            outline: 2px solid #007bff;
+        }
+        /* NEW: Scroll container for the table */
+        .scroll-container {
+            max-height: 400px; /* Adjust as needed */
+            overflow: auto;
+        }
     </style>
 </head>
 <body class="antialiased flex flex-col min-h-screen">
@@ -136,7 +161,6 @@
 
     <main class="container mx-auto px-6 py-12 flex-grow">
 
-        <!-- Home Dashboard View -->
         <section id="home-view">
             <h1 class="text-3xl md:text-5xl font-bold text-black leading-tight mb-4 text-center">Dashboard</h1>
             
@@ -190,21 +214,17 @@
                         </tr>
                     </thead>
                     <tbody id="activities-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Activity rows will be inserted here by JavaScript -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
 
-            <!-- Training Progress & Assessment View (Now part of Home) -->
             <section id="training-progress-view">
                 <h1 class="text-3xl md:text-5xl font-bold text-black leading-tight mb-4 text-center mt-12">Your Training Assessment</h1>
                 
-                <!-- New 'Update Data' Button -->
                 <div class="flex justify-center mb-8">
                     <button id="update-data-button" class="bg-red-600 text-white font-bold py-3 px-8 rounded-full hover:bg-red-700 transition-all">Update Data and Assessment</button>
                 </div>
 
-                <!-- Collapsible Upcoming Races/Goals Table -->
                 <div class="bg-white rounded-lg shadow-md p-4 mb-8">
                     <button id="toggle-goals" class="w-full flex justify-between items-center text-lg font-bold text-red-600 py-2">
                         Upcoming Races & Goals
@@ -223,13 +243,11 @@
                                 </tr>
                             </thead>
                             <tbody id="goals-table-body" class="bg-white divide-y divide-gray-200">
-                                <!-- Goal rows will be inserted here by JavaScript -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Gemini Performance Assessment -->
                 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                     <button id="toggle-assessment" class="w-full flex justify-between items-center text-lg font-bold text-red-600 py-2">
                         Gemini Performance Assessment
@@ -240,8 +258,7 @@
                             <p>Loading your personalized assessment...</p>
                         </div>
                         <div id="assessment-content" class="prose max-w-none text-left mt-4">
-                            <!-- Assessment content will be inserted here by Gemini -->
-                        </div>
+                            </div>
                         <button id="refresh-plan-button" class="mt-6 bg-red-600 text-white font-bold py-3 px-6 rounded-full hover:bg-red-700 transition-all">Refresh Training Plan</button>
                     </div>
                 </div>
@@ -249,7 +266,6 @@
         </section>
 
 
-        <!-- Detailed Activity View -->
         <section id="details-view" class="hidden">
             <h1 id="details-title" class="text-3xl md:text-5xl font-bold text-black leading-tight mb-4 text-center"></h1>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -279,11 +295,9 @@
             </div>
         </section>
 
-        <!-- Training Plan View -->
         <section id="training-plan-view" class="hidden">
             <h1 class="text-3xl md:text-5xl font-bold text-black leading-tight mb-4 text-center">Your Training Plans</h1>
             
-            <!-- Current Plan Section -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <button id="toggle-current-plan" class="w-full flex justify-between items-center text-lg font-bold text-black py-2">
                     Current Plan: <span id="current-plan-date-range">Loading...</span>
@@ -291,8 +305,7 @@
                 </button>
                 <div id="current-plan-content" class="overflow-x-auto mt-4">
                     <div id="current-plan-table-wrapper" class="overflow-x-auto">
-                        <!-- Current plan table will be inserted here by JavaScript -->
-                    </div>
+                        </div>
                     <div class="flex justify-between items-center mt-4">
                         <button id="prev-week-button" class="bg-gray-200 text-black font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-all">← Previous Week</button>
                         <button id="next-week-button" class="bg-gray-200 text-black font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-all">Next Week →</button>
@@ -300,7 +313,6 @@
                 </div>
             </div>
 
-            <!-- Proposed Plan Section -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <button id="toggle-proposed-plan" class="w-full flex justify-between items-center text-lg font-bold text-red-600 py-2">
                     Proposed Plan for Next Week
@@ -308,8 +320,7 @@
                 </button>
                 <div id="proposed-plan-content" class="overflow-x-auto mt-4" style="display: none;">
                     <div id="plan-content" class="overflow-x-auto">
-                        <!-- Proposed plan table will be inserted here by JavaScript -->
-                    </div>
+                        </div>
                     <div class="mt-8">
                         <h3 class="text-lg font-bold text-black mb-2">Review & Edit</h3>
                         <p class="text-sm text-gray-500 mb-2">You can edit the plan below using Markdown table syntax. Click 'Save Edits' to update your current plan.</p>
@@ -323,21 +334,18 @@
             </div>
         </section>
 
-        <!-- New Nutrition View -->
         <section id="nutrition-view" class="hidden">
             <h1 class="text-3xl md:text-5xl font-bold text-black leading-tight mb-4 text-center">Nutrition</h1>
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <h2 class="text-xl font-bold text-black mb-4">Chat with your Nutrition Coach</h2>
                 <div id="nutrition-chat-box" class="flex flex-col h-64 overflow-y-auto p-4 border rounded-lg bg-gray-50 mb-4">
-                    <!-- Chat messages will be appended here -->
-                </div>
+                    </div>
                 <div class="flex">
                     <input type="text" id="nutrition-chat-input" placeholder="Type your dietary preferences, allergies, or goals..." class="flex-grow p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-black">
                     <button id="nutrition-chat-send" class="bg-red-600 text-white font-bold py-3 px-6 rounded-r-lg hover:bg-red-700 transition-all">Send</button>
                 </div>
             </div>
             
-            <!-- Race Nutrition Section -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <button id="toggle-race-nutrition" class="w-full flex justify-between items-center text-lg font-bold text-red-600 py-2">
                     Race Nutrition Plan
@@ -347,14 +355,12 @@
                     <div class="mb-6">
                         <h3 class="text-lg font-bold text-black mb-2">Current Race Plan</h3>
                         <div id="current-race-plan-wrapper" class="overflow-x-auto">
-                            <!-- Current race plan table will be inserted here -->
-                        </div>
+                            </div>
                     </div>
                     <div class="mb-6">
                         <h3 class="text-lg font-bold text-black mb-2">Proposed Race Plan</h3>
                         <div id="proposed-race-plan-wrapper">
-                            <!-- Proposed race plan table will be inserted here by Gemini -->
-                        </div>
+                            </div>
                         <button id="generate-race-plan-button" class="mt-4 bg-gray-200 text-black font-bold py-2 px-6 rounded-full hover:bg-gray-300 transition-all">Generate New Race Plan</button>
                     </div>
                     <div>
@@ -367,7 +373,6 @@
                 </div>
             </div>
 
-            <!-- Daily Nutrition Section -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                 <button id="toggle-daily-nutrition" class="w-full flex justify-between items-center text-lg font-bold text-red-600 py-2">
                     Daily Nutrition
@@ -377,14 +382,12 @@
                     <div class="mb-6">
                         <h3 class="text-lg font-bold text-black mb-2">Current Daily Diet</h3>
                         <div id="current-daily-diet-wrapper" class="overflow-x-auto">
-                            <!-- Current daily diet table will be inserted here -->
-                        </div>
+                            </div>
                     </div>
                     <div class="mb-6">
                         <h3 class="text-lg font-bold text-black mb-2">Proposed Daily Diet</h3>
                         <div id="proposed-daily-diet-wrapper">
-                            <!-- Proposed daily diet table will be inserted here by Gemini -->
-                        </div>
+                            </div>
                         <button id="generate-daily-diet-button" class="mt-4 bg-gray-200 text-black font-bold py-2 px-6 rounded-full hover:bg-gray-300 transition-all">Generate New Daily Diet</button>
                     </div>
                     <div>
@@ -398,23 +401,25 @@
             </div>
         </section>
 
-        <!-- Settings View -->
         <section id="settings-view" class="hidden">
             <h1 class="text-3xl md:text-5xl font-bold text-black leading-tight mb-4 text-center">Settings</h1>
             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                <!-- NEW: Data Upload Section -->
                 <div class="mb-6">
                     <h3 class="text-sm font-medium text-gray-700">Upload Data</h3>
                     <p class="mt-1 text-sm text-gray-500">Upload your activity data from an Excel or CSV file. The app will parse and prepare it for review.</p>
                     <input type="file" id="upload-data-input" class="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-black hover:file:bg-gray-300" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                 </div>
 
-                <!-- NEW: Review Uploaded Data Section -->
                 <div class="bg-gray-50 rounded-lg shadow-inner p-4 my-6 hidden" id="uploaded-data-section">
                     <h3 class="text-lg font-bold text-black mb-2">Review & Edit Uploaded Data</h3>
-                    <p class="text-sm text-gray-500 mb-2">The parsed data is below. Make any necessary edits before saving to your profile.</p>
-                    <textarea id="data-editor" class="w-full h-64 p-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm font-mono"></textarea>
-                    <div class="flex justify-end mt-4">
+                    <p class="text-sm text-gray-500 mb-2">De geparseerde gegevens staan hieronder. Maak de nodige bewerkingen voordat je ze opslaat.</p>
+                    
+                    <div class="scroll-container">
+                        <div id="data-table-container"></div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-4 mt-4">
+                        <button id="clear-uploaded-data-button" class="bg-gray-500 text-white font-bold py-2 px-6 rounded-full hover:bg-gray-600 transition-all">Clear Data</button>
                         <button id="save-uploaded-data-button" class="bg-red-600 text-white font-bold py-2 px-6 rounded-full hover:bg-red-700 transition-all">Save to My Profile</button>
                     </div>
                 </div>
@@ -547,9 +552,12 @@
 
             const uploadDataInput = document.getElementById('upload-data-input');
             const uploadedDataSection = document.getElementById('uploaded-data-section');
-            const dataEditor = document.getElementById('data-editor');
+            const dataTableContainer = document.getElementById('data-table-container');
             const saveUploadedDataButton = document.getElementById('save-uploaded-data-button');
             
+            // NEW: Reference for the clear button
+            const clearUploadedDataButton = document.getElementById('clear-uploaded-data-button');
+
             let currentPage = 'home';
             let selectedActivityData = null;
             let paceChart;
@@ -662,20 +670,16 @@
                     } else if (gradient < 0) {
                         adjustedTimeFactor = 1 + (gradient * 0.02);
                     }
-                    
                     const adjustedTime = totalTimeSeconds * adjustedTimeFactor;
                     const ngp = totalDistanceMeters / adjustedTime * 60;
-                    
                     if (isFinite(ngp)) {
                         ngpSum += ngp;
                         ngpCount++;
                     }
                 });
-
                 const avgNGP = ngpCount > 0 ? ngpSum / ngpCount : 0;
                 return (60 / avgNGP).toFixed(2);
             }
-
             function formatTime(seconds) {
                 const h = Math.floor(seconds / 3600);
                 const m = Math.floor((seconds % 3600) / 60);
@@ -685,151 +689,47 @@
                 const sDisplay = `${s.toString().padStart(2, '0')}`;
                 return hDisplay + mDisplay + sDisplay;
             }
-
             function getCoachTone() {
                 return localStorage.getItem('coachTone') || 'motivational';
             }
-
             function getPerformanceAssessmentPrompt(tone) {
                 let styleInstruction;
                 switch(tone) {
-                    case 'technical':
-                        styleInstruction = "Provide a concise, data-driven analysis. Use scientific and technical language. Do not use emojis, analogies, or overly conversational language. Focus on metrics and training principles.";
-                        break;
-                    case 'friendly':
-                        styleInstruction = "Provide a warm, encouraging, and easy-going assessment. Use simple, conversational language and friendly emojis. Relate the assessment to the user's personal journey.";
-                        break;
-                    case 'motivational':
-                    default:
-                        styleInstruction = "Provide a highly motivational and encouraging assessment. Use powerful language, analogies, and a confident tone. Use emojis to add energy. Frame the feedback as positive progress toward goals.";
-                        break;
+                    case 'technical': styleInstruction = "Provide a concise, data-driven analysis. Use scientific and technical language. Do not use emojis, analogies, or overly conversational language. Focus on metrics and training principles."; break;
+                    case 'friendly': styleInstruction = "Provide a warm, encouraging, and easy-going assessment. Use simple, conversational language and friendly emojis. Relate the assessment to the user's personal journey."; break;
+                    case 'motivational': default: styleInstruction = "Provide a highly motivational and encouraging assessment. Use powerful language, analogies, and a confident tone. Use emojis to add energy. Frame the feedback as positive progress toward goals."; break;
                 }
                 const activitiesText = activitiesData.map(act => `${act.name}: ${act.distance.toFixed(2)}km, ${act.total_elevation_gain}m gain, ${formatTime(act.moving_time)} time`).join('; ');
                 const goalsText = goalsData.map(goal => `${goal.event}: ${goal.objective}`).join('; ');
-
-                return `
-                Analyze the following recent trail running activities and provide a personalized coaching assessment.
-                
-                ${styleInstruction}
-
-                Recent Activities:
-                ${activitiesText}
-
-                Upcoming Events:
-                ${goalsText}
-
-                Provide a detailed assessment, focusing on key themes:
-                1.  **Progress vs Previous Weeks:** Comment on volume, long runs, HR efficiency (assume it's strong and improving), and consistency.
-                2.  **Fitness Assessment:** Assess aerobic base, endurance, and speed/tempo.
-                3.  **On Track?**: Provide a clear answer with an explanation based on the upcoming goals.
-                4.  **Realistic Outcome:** Give a realistic outlook for the key events.
-                5.  **Summary and Key Priorities:** Conclude with a short summary and a bulleted list of actionable priorities for the next 6 weeks (e.g., progressive long runs, marathon-pace sessions, fueling practice, strength & mobility).
-
-                The output should be a single, well-structured text block, formatted with Markdown for headings and bolding.
-                `;
+                return ` Analyze the following recent trail running activities and provide a personalized coaching assessment. ${styleInstruction} Recent Activities: ${activitiesText} Upcoming Events: ${goalsText} Provide a detailed assessment, focusing on key themes: 1. **Progress vs Previous Weeks:** Comment on volume, long runs, HR efficiency (assume it's strong and improving), and consistency. 2. **Fitness Assessment:** Assess aerobic base, endurance, and speed/tempo. 3. **On Track?**: Provide a clear answer with an explanation based on the upcoming goals. 4. **Realistic Outcome:** Give a realistic outlook for the key events. 5. **Summary and Key Priorities:** Conclude with a short summary and a bulleted list of actionable priorities for the next 6 weeks (e.g., progressive long runs, marathon-pace sessions, fueling practice, strength & mobility). The output should be a single, well-structured text block, formatted with Markdown for headings and bolding. `;
             }
-
             function getNewPlanPrompt(tone) {
                 const nextMonday = getWeekStartDate(1);
-                
                 const formatDate = (date) => {
                     const options = { weekday: 'short', month: 'short', day: 'numeric' };
                     return date.toLocaleDateString('en-US', options);
                 };
-
                 const dates = [];
                 for (let i = 0; i < 7; i++) {
                     const date = new Date(nextMonday);
                     date.setDate(nextMonday.getDate() + i);
                     dates.push(formatDate(date));
                 }
-
                 let styleInstruction;
                 switch(tone) {
-                    case 'technical':
-                        styleInstruction = "Propose a detailed training plan for next week in a technical format. Use precise workout descriptions (e.g., '10km Z2 run' instead of 'easy run'). Be direct and avoid conversational filler.";
-                        break;
-                    case 'friendly':
-                        styleInstruction = "Propose a training plan for next week in a friendly and easy-going style. Use simple workout names and encouraging language. Make it feel approachable.";
-                        break;
-                    case 'motivational':
-                    default:
-                        styleInstruction = "Propose a training plan for next week in a highly motivational and inspiring tone. Frame each workout as a challenge and an opportunity to get stronger.";
-                        break;
+                    case 'technical': styleInstruction = "Propose a detailed training plan for next week in a technical format. Use precise workout descriptions (e.g., '10km Z2 run' instead of 'easy run'). Be direct and avoid conversational filler."; break;
+                    case 'friendly': styleInstruction = "Propose a training plan for next week in a friendly and easy-going style. Use simple workout names and encouraging language. Make it feel approachable."; break;
+                    case 'motivational': default: styleInstruction = "Propose a training plan for next week in a highly motivational and inspiring tone. Frame each workout as a challenge and an opportunity to get stronger."; break;
                 }
-                
                 const recentActivitiesSummary = activitiesData.slice(0, 3).map(act => `${act.name}: ${act.distance.toFixed(2)} km`).join(', ');
-
-                return `
-                Based on the following recent training activities and upcoming goals, propose a detailed training plan for next week.
-
-                Recent activities: ${recentActivitiesSummary}
-                Upcoming goals: ${goalsData.map(g => g.objective).join(', ')}
-
-                ${styleInstruction}
-
-                Create the plan as a Markdown table. The table should have three columns: **Date**, **Workout**, and **Objective**.
-
-                **Workout Plan for the Week of ${dates[0]}**
-
-                | Date | Workout | Objective |
-                |---|---|---|
-                | ${dates[0]} | Rest Day | Allow muscles to recover |
-                | ${dates[1]} | Short easy run | Build aerobic base and promote recovery |
-                | ${dates[2]} | Hill Repeats | Improve running economy and power |
-                | ${dates[3]} | Easy Trail Run | Active recovery and light aerobic work |
-                | ${dates[4]} | Rest Day | Allow for full recovery before the weekend |
-                | ${dates[5]} | Long Trail Run | Improve endurance and practice fueling |
-                | ${dates[6]} | Cross-Training | Active recovery or low-impact cardio |
-
-                Do not include any other text before or after the markdown table.
-                `;
+                return ` Based on the following recent training activities and upcoming goals, propose a detailed training plan for next week. Recent activities: ${recentActivitiesSummary} Upcoming goals: ${goalsData.map(g => g.objective).join(', ')} ${styleInstruction} Create the plan as a Markdown table. The table should have three columns: **Date**, **Workout**, and **Objective**. **Workout Plan for the Week of ${dates[0]}** | Date | Workout | Objective | |---|---|---| | ${dates[0]} | Rest Day | Allow muscles to recover | | ${dates[1]} | Short easy run | Build aerobic base and promote recovery | | ${dates[2]} | Hill Repeats | Improve running economy and power | | ${dates[3]} | Easy Trail Run | Active recovery and light aerobic work | | ${dates[4]} | Rest Day | Allow for full recovery before the weekend | | ${dates[5]} | Long Trail Run | Improve endurance and practice fueling | | ${dates[6]} | Cross-Training | Active recovery or low-impact cardio | Do not include any other text before or after the markdown table. `;
             }
-
             function getRaceNutritionPrompt(dietaryInfo) {
-                return `
-                I am a trail runner training for a ${goalsData[0].distance} race with ${goalsData[0].elevation} of elevation gain. My dietary needs and preferences are: "${dietaryInfo}".
-
-                Create a simple, practical nutrition plan for the race week.
-                The plan should be a Markdown table with three columns: "Time", "Meal/Snack", and "Purpose".
-                Focus on the final 3 days before the race and the race day itself.
-
-                **Sample Race Nutrition Plan**
-
-                | Time | Meal/Snack | Purpose |
-                |---|---|---|
-                | 3 days pre-race | Carb-loading meals (rice, pasta) | Top up muscle glycogen stores |
-                | 1 day pre-race | Light, familiar food (pasta, chicken) | Avoid GI distress |
-                | Race Morning (3h before) | Bagel with banana and honey | Easily digestible carbs for energy |
-                | During Race (per hour) | Energy gel, chew or bar | Maintain blood sugar and energy |
-                | Post-Race | Protein shake and savory food | Begin recovery and muscle repair |
-
-                Adjust the content of the table based on the user's dietary information. Do not include any text before or after the markdown table.
-                `;
+                return ` I am a trail runner training for a ${goalsData[0].distance} race with ${goalsData[0].elevation} of elevation gain. My dietary needs and preferences are: "${dietaryInfo}". Create a simple, practical nutrition plan for the race week. The plan should be a Markdown table with three columns: "Time", "Meal/Snack", and "Purpose". Focus on the final 3 days before the race and the race day itself. **Sample Race Nutrition Plan** | Time | Meal/Snack | Purpose | |---|---|---| | 3 days pre-race | Carb-loading meals (rice, pasta) | Top up muscle glycogen stores | | 1 day pre-race | Light, familiar food (pasta, chicken) | Avoid GI distress | | Race Morning (3h before) | Bagel with banana and honey | Easily digestible carbs for energy | | During Race (per hour) | Energy gel, chew or bar | Maintain blood sugar and energy | | Post-Race | Protein shake and savory food | Begin recovery and muscle repair | Adjust the content of the table based on the user's dietary information. Do not include any text before or after the markdown table. `;
             }
-
             function getDailyNutritionPrompt(dietaryInfo) {
-                return `
-                I am a trail runner with the following dietary needs and preferences: "${dietaryInfo}". I am looking for a simple, balanced daily diet plan to support my training.
-
-                Create a simple, practical daily nutrition plan for a trail runner.
-                The plan should be a Markdown table with three columns: "Time", "Meal/Snack", and "Example".
-                Include meals for breakfast, lunch, dinner, and snacks. The examples should reflect a runner's needs (e.g., carbs, protein, healthy fats).
-
-                **Sample Daily Diet**
-
-                | Time | Meal/Snack | Example |
-                |---|---|---|
-                | Morning | Pre-run snack | Oatmeal with berries |
-                | Breakfast | Post-run recovery meal | Scrambled eggs and toast |
-                | Lunch | Balanced meal | Chicken salad with mixed greens |
-                | Afternoon | Snack | Apple with almond butter |
-                | Dinner | Recovery dinner | Salmon, sweet potatoes, and roasted broccoli |
-
-                Adjust the content of the table based on the user's dietary information. Do not include any text before or after the markdown table.
-                `;
+                return ` I am a trail runner with the following dietary needs and preferences: "${dietaryInfo}". I am looking for a simple, balanced daily diet plan to support my training. Create a simple, practical daily nutrition plan for a trail runner. The plan should be a Markdown table with three columns: "Time", "Meal/Snack", and "Example". Include meals for breakfast, lunch, dinner, and snacks. The examples should reflect a runner's needs (e.g., carbs, protein, healthy fats). **Sample Daily Diet** | Time | Meal/Snack | Example | |---|---|---| | Morning | Pre-run snack | Oatmeal with berries | | Breakfast | Post-run recovery meal | Scrambled eggs and toast | | Lunch | Balanced meal | Chicken salad with mixed greens | | Afternoon | Snack | Apple with almond butter | | Dinner | Recovery dinner | Salmon, sweet potatoes, and roasted broccoli | Adjust the content of the table based on the user's dietary information. Do not include any text before or after the markdown table. `;
             }
-
             function getWeekStartDate(offset = 0) {
                 const today = new Date();
                 const firstDayOfWeek = today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1);
@@ -842,79 +742,44 @@
             function renderDashboardKPIs() {
                 const selectedDate = dateSelector.value ? new Date(dateSelector.value) : new Date();
                 startDateDisplay.textContent = selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                
                 const now = new Date();
                 const lastWeekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                let lastWeekDistanceSum = 0;
+                let lastWeekElevationSum = 0;
+                let lastWeekTimeSum = 0;
+                let timeToDateDistanceSum = 0;
+                let timeToDateElevationSum = 0;
+                let timeToDateTimeSum = 0;
 
-                let lastWeekDistanceTotal = 0;
-                let lastWeekElevationTotal = 0;
-                let lastWeekTimeTotal = 0;
-                let timeToDateDistanceTotal = 0;
-                let timeToDateElevationTotal = 0;
-                let timeToDateTimeTotal = 0;
-
-                activitiesData.forEach(activity => {
-                    const activityDate = new Date(activity.date);
-
-                    if (activityDate >= lastWeekStart && activityDate <= now) {
-                        lastWeekDistanceTotal += activity.distance;
-                        lastWeekElevationTotal += activity.total_elevation_gain;
-                        lastWeekTimeTotal += activity.moving_time;
+                activitiesData.forEach(act => {
+                    const activityDate = new Date(act.date);
+                    if (activityDate >= lastWeekStart) {
+                        lastWeekDistanceSum += act.distance;
+                        lastWeekElevationSum += act.total_elevation_gain;
+                        lastWeekTimeSum += act.moving_time;
                     }
-                    
-                    if (activityDate >= selectedDate && activityDate <= now) {
-                        timeToDateDistanceTotal += activity.distance;
-                        timeToDateElevationTotal += activity.total_elevation_gain;
-                        timeToDateTimeTotal += activity.moving_time;
+                    if (activityDate >= selectedDate) {
+                        timeToDateDistanceSum += act.distance;
+                        timeToDateElevationSum += act.total_elevation_gain;
+                        timeToDateTimeSum += act.moving_time;
                     }
                 });
 
-                lastWeekDistance.textContent = `${lastWeekDistanceTotal.toFixed(2)} km`;
-                lastWeekElevation.textContent = `${lastWeekElevationTotal} m`;
-                lastWeekTime.textContent = formatTime(lastWeekTimeTotal);
-
-                timeToDateDistance.textContent = `${timeToDateDistanceTotal.toFixed(2)} km`;
-                timeToDateElevation.textContent = `${timeToDateElevationTotal} m`;
-                timeToDateTime.textContent = formatTime(timeToDateTimeTotal);
-
-                const vo2Score = 54;
-                document.getElementById('vo2-score').textContent = vo2Score;
-                const category = vo2Categories.find(cat => vo2Score >= cat.score)?.category || 'Very Low';
-                document.getElementById('vo2-category').textContent = category;
+                lastWeekDistance.textContent = `${lastWeekDistanceSum.toFixed(2)} km`;
+                lastWeekElevation.textContent = `${lastWeekElevationSum} m gain`;
+                lastWeekTime.textContent = formatTime(lastWeekTimeSum);
+                timeToDateDistance.textContent = `${timeToDateDistanceSum.toFixed(2)} km`;
+                timeToDateElevation.textContent = `${timeToDateElevationSum} m gain`;
+                timeToDateTime.textContent = formatTime(timeToDateTimeSum);
             }
 
-            function renderFutureGoals() {
-                goalsTableBody.innerHTML = '';
-                goalsData.forEach(goal => {
-                    const row = document.createElement('tr');
-                    let trafficLightColor;
-                    if (goal.readiness === 'On Track') {
-                        trafficLightColor = 'bg-green-500';
-                    } else if (goal.readiness === 'At Risk') {
-                        trafficLightColor = 'bg-yellow-500';
-                    } else {
-                        trafficLightColor = 'bg-red-500';
-                    }
-
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${goal.event}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.distance}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.elevation}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.objective}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span class="inline-block h-3 w-3 rounded-full ${trafficLightColor} mr-2"></span>
-                            <span>${goal.readiness}</span>
-                        </td>
-                    `;
-                    goalsTableBody.appendChild(row);
-                });
-            }
-
-            function renderActivitiesList() {
+            function renderActivitiesTable(data) {
                 activitiesTableBody.innerHTML = '';
-                activitiesData.forEach((activity, index) => {
-                    const ngpMinPerKm = calculateNGP(activity.laps);
+                if (!data || data.length === 0) {
+                    activitiesTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No recent activities found.</td></tr>';
+                    return;
+                }
+                data.forEach((activity, index) => {
                     const row = document.createElement('tr');
                     row.className = 'table-row-hover';
                     row.innerHTML = `
@@ -922,350 +787,71 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${activity.distance.toFixed(2)} km</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${activity.total_elevation_gain} m</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatTime(activity.moving_time)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${ngpMinPerKm} min/km</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${calculateNGP(activity.laps)} min/km</td>
                     `;
-                    row.addEventListener('click', () => {
-                        selectedActivityData = activity;
-                        updateView('details');
-                    });
+                    row.addEventListener('click', () => showDetailsView(activity));
                     activitiesTableBody.appendChild(row);
                 });
             }
 
-            function renderActivityDetails(activity) {
-                document.getElementById('details-title').textContent = activity.name;
-                document.getElementById('details-distance').textContent = `${activity.distance.toFixed(2)} km`;
-                document.getElementById('details-elevation').textContent = `${activity.total_elevation_gain} m`;
-                document.getElementById('details-time').textContent = formatTime(activity.moving_time);
-                const ngpMinPerKm = calculateNGP(activity.laps);
-                document.getElementById('details-ngp').textContent = `${ngpMinPerKm} min/km`;
-                
-                const labels = activity.laps.map((_, i) => `Lap ${i + 1}`);
-                const actualPaces = activity.laps.map(lap => {
-                    const speedMPS = (lap.distance * 1000) / lap.moving_time;
-                    return isFinite(speedMPS) ? speedMPS : 0;
+            function renderGoalsTable() {
+                goalsTableBody.innerHTML = '';
+                goalsData.forEach(goal => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${goal.event}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.distance}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.elevation}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${goal.objective}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">${goal.readiness}</td>
+                    `;
+                    goalsTableBody.appendChild(row);
                 });
-                const ngpPaces = activity.laps.map(lap => {
-                    const totalDistanceMeters = lap.distance * 1000;
-                    const totalElevationMeters = lap.elevation_gain;
-                    const totalTimeSeconds = lap.moving_time;
-                    if (totalDistanceMeters === 0) return 0;
-                    const gradient = totalElevationMeters / totalDistanceMeters;
-                    let adjustedTimeFactor = 1;
-                    if (gradient > 0) { adjustedTimeFactor = 1 + (gradient * 0.05); } 
-                    else if (gradient < 0) { adjustedTimeFactor = 1 + (gradient * 0.02); }
-                    const adjustedTime = totalTimeSeconds * adjustedTimeFactor;
-                    return isFinite(totalDistanceMeters / adjustedTime) ? totalDistanceMeters / adjustedTime : 0;
-                });
-
-                const paceChartCtx = document.getElementById('paceChart').getContext('2d');
-                if (paceChart) {
-                    paceChart.destroy();
-                }
-                paceChart = new Chart(paceChartCtx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Actual Pace (m/s)',
-                                data: actualPaces,
-                                borderColor: '#ff0000',
-                                backgroundColor: 'rgba(255, 0, 0, 0.2)',
-                                borderWidth: 2,
-                                tension: 0.4
-                            },
-                            {
-                                label: 'NGP (m/s)',
-                                data: ngpPaces,
-                                borderColor: '#000000',
-                                backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                                borderWidth: 2,
-                                tension: 0.4
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Pace (m/s)'
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Laps'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            async function getPerformanceAssessment() {
-                if (!apiKey) {
-                    assessmentContent.textContent = "Please provide your Gemini API key in the code.";
-                    return;
-                }
-                if (activitiesData.length === 0) {
-                    assessmentContent.textContent = "No activity data found. Please upload your data in the settings.";
-                    assessmentLoadingState.classList.add('hidden');
-                    assessmentContent.classList.remove('hidden');
-                    refreshPlanButton.classList.remove('hidden');
-                    return;
-                }
-                assessmentLoadingState.classList.remove('hidden');
-                assessmentContent.classList.add('hidden');
-                refreshPlanButton.classList.add('hidden');
-                const tone = getCoachTone();
-                const prompt = getPerformanceAssessmentPrompt(tone);
-                const payload = { contents: [{ parts: [{ text: prompt }] }] };
-
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        assessmentContent.innerHTML = parseMarkdown(text);
-                    } else {
-                        assessmentContent.textContent = "Could not generate assessment. Please try again.";
-                    }
-                } catch (error) {
-                    console.error('Error generating assessment:', error);
-                    assessmentContent.textContent = "An error occurred. Please try again later.";
-                } finally {
-                    assessmentLoadingState.classList.add('hidden');
-                    assessmentContent.classList.remove('hidden');
-                    refreshPlanButton.classList.remove('hidden');
-                }
-            }
-            
-            async function getNewPlan() {
-                if (!apiKey) {
-                    planContent.innerHTML = `<p class="text-center text-red-500 py-12">Please provide your Gemini API key in the code.</p>`;
-                    return;
-                }
-                planContent.innerHTML = `<p class="text-center text-gray-500 py-12">Generating new training plan...</p>`;
-                const tone = getCoachTone();
-                const prompt = getNewPlanPrompt(tone);
-                const payload = { contents: [{ parts: [{ text: prompt }] }] };
-                
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        planEditor.value = text;
-                        renderPlanTable(text, planContent);
-                    } else {
-                        planContent.innerHTML = `<p class="text-center text-red-500">Could not generate a new plan. Please try again.</p>`;
-                    }
-                } catch (error) {
-                    console.error('Error generating new plan:', error);
-                    planContent.innerHTML = `<p class="text-center text-red-500">An error occurred while generating the plan. Please try again.</p>`;
-                }
-            }
-            
-            async function generateRaceNutrition() {
-                if (!apiKey) {
-                    proposedRacePlanWrapper.innerHTML = `<p class="text-center text-red-500 py-4">Please provide your Gemini API key in the code.</p>`;
-                    return;
-                }
-                proposedRacePlanWrapper.innerHTML = `<p class="text-center text-gray-500 py-4">Generating race nutrition plan...</p>`;
-                const userDiet = chatHistory.length > 1 ? chatHistory[chatHistory.length - 1].parts[0].text : "No dietary information provided.";
-                const prompt = getRaceNutritionPrompt(userDiet);
-                const payload = { contents: [{ parts: [{ text: prompt }] }] };
-                
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        racePlanEditor.value = text;
-                        renderPlanTable(text, proposedRacePlanWrapper);
-                    } else {
-                        proposedRacePlanWrapper.innerHTML = `<p class="text-center text-red-500">Could not generate a new plan. Please try again.</p>`;
-                    }
-                } catch (error) {
-                    console.error('Error generating race plan:', error);
-                    proposedRacePlanWrapper.innerHTML = `<p class="text-center text-red-500">An error occurred while generating the plan. Please try again.</p>`;
-                }
-            }
-
-            async function generateDailyDiet() {
-                if (!apiKey) {
-                    proposedDailyDietWrapper.innerHTML = `<p class="text-center text-red-500 py-4">Please provide your Gemini API key in the code.</p>`;
-                    return;
-                }
-                proposedDailyDietWrapper.innerHTML = `<p class="text-center text-gray-500 py-4">Generating daily diet plan...</p>`;
-                const userDiet = chatHistory.length > 1 ? chatHistory[chatHistory.length - 1].parts[0].text : "No dietary information provided.";
-                const prompt = getDailyNutritionPrompt(userDiet);
-                const payload = { contents: [{ parts: [{ text: prompt }] }] };
-                
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        dailyDietEditor.value = text;
-                        renderPlanTable(text, proposedDailyDietWrapper);
-                    } else {
-                        proposedDailyDietWrapper.innerHTML = `<p class="text-center text-red-500">Could not generate a new diet. Please try again.</p>`;
-                    }
-                } catch (error) {
-                    console.error('Error generating daily diet:', error);
-                    proposedDailyDietWrapper.innerHTML = `<p class="text-center text-red-500">An error occurred while generating the diet. Please try again.</p>`;
-                }
-            }
-
-            function parseMarkdown(markdownText) {
-                const lines = markdownText.split('\n');
-                let html = '';
-                let inList = false;
-
-                lines.forEach(line => {
-                    if (inList && !line.startsWith('* ') && !line.startsWith('- ')) {
-                        html += '</ul>';
-                        inList = false;
-                    }
-
-                    if (line.startsWith('### ')) {
-                        html += `<h3>${line.substring(4)}</h3>`;
-                    } else if (line.startsWith('## ')) {
-                        html += `<h2>${line.substring(3)}</h2>`;
-                    } else if (line.startsWith('* ') || line.startsWith('- ')) {
-                        if (!inList) { html += '<ul>'; inList = true; }
-                        const content = line.substring(2);
-                        html += `<li>${content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</li>`;
-                    } else if (line.trim() === '') {
-                        if (inList) { html += '</ul>'; inList = false; }
-                        html += '<p></p>';
-                    } else {
-                         html += `<p>${line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
-                    }
-                });
-                if (inList) { html += '</ul>'; }
-                return html;
-            }
-
-            function renderPlanTable(markdownTable, containerElement) {
-                const lines = markdownTable.split('\n');
-                if (lines.length < 3) {
-                    containerElement.innerHTML = `<p class="text-center text-red-500">Invalid table format. Please use Markdown syntax.</p>`;
-                    return;
-                }
-
-                const [headerLine, dividerLine, ...dataLines] = lines;
-                const headers = headerLine.split('|').map(h => h.trim()).filter(Boolean);
-
-                let tableHtml = `<table class="training-plan-table w-full border-collapse"><thead><tr>`;
-                headers.forEach(header => {
-                    tableHtml += `<th class="px-4 py-2">${header}</th>`;
-                });
-                tableHtml += `</tr></thead><tbody>`;
-
-                dataLines.forEach(line => {
-                    const cells = line.split('|').map(c => c.trim()).filter(Boolean);
-                    if (cells.length === headers.length) {
-                        tableHtml += `<tr>`;
-                        cells.forEach(cell => {
-                            tableHtml += `<td class="px-4 py-2">${cell}</td>`;
-                        });
-                        tableHtml += `</tr>`;
-                    }
-                });
-                tableHtml += `</tbody></table>`;
-                containerElement.innerHTML = tableHtml;
             }
 
             function renderCurrentPlan() {
                 const monday = getWeekStartDate(currentWeekOffset);
                 const sunday = new Date(monday);
                 sunday.setDate(monday.getDate() + 6);
-                const weekKey = `${monday.toISOString().split('T')[0]}`;
+                currentPlanDateRange.textContent = `${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
                 
-                const startString = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const endString = sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                currentPlanDateRange.textContent = `${startString} - ${endString}`;
-
-                const planMarkdown = currentPlans[weekKey];
-                if (planMarkdown) {
-                    renderPlanTable(planMarkdown, currentPlanTableWrapper);
-                } else {
-                    currentPlanTableWrapper.innerHTML = `<p class="text-center text-gray-500 py-12">No plan saved for this week.</p>`;
+                const planKey = `${monday.getFullYear()}-${monday.getMonth()}-${monday.getDate()}`;
+                const planMarkdown = currentPlans[planKey] || "";
+                currentPlanTableWrapper.innerHTML = `<div>${marked.parse(planMarkdown)}</div>`;
+                if (!planMarkdown) {
+                     currentPlanTableWrapper.innerHTML = `<p class="text-gray-500">No plan available for this week.</p>`;
                 }
             }
 
-            function renderCurrentNutritionPlans() {
-                const racePlanMarkdown = raceNutritionPlans.latest;
-                if (racePlanMarkdown) {
-                    renderPlanTable(racePlanMarkdown, currentRacePlanWrapper);
-                } else {
-                    currentRacePlanWrapper.innerHTML = `<p class="text-center text-gray-500 py-4">No race plan saved yet.</p>`;
-                }
-
-                const dailyDietMarkdown = dailyNutritionPlans.latest;
-                if (dailyDietMarkdown) {
-                    renderPlanTable(dailyDietMarkdown, currentDailyDietWrapper);
-                } else {
-                    currentDailyDietWrapper.innerHTML = `<p class="text-center text-gray-500 py-4">No daily diet saved yet.</p>`;
-                }
-            }
-
-            function toggleSection(button, content, chevron) {
-                const isHidden = content.style.display === 'none';
-                content.style.display = isHidden ? 'block' : 'none';
-                chevron.textContent = isHidden ? '▲' : '▼';
+            function renderProposedPlan(markdown) {
+                planContent.innerHTML = marked.parse(markdown);
+                planEditor.value = markdown;
             }
             
-            async function appendMessage(sender, message) {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('chat-message', sender);
-                if (sender === 'gemini') {
-                    const typingIndicator = document.createElement('span');
-                    typingIndicator.textContent = '...';
-                    messageElement.appendChild(typingIndicator);
-                    nutritionChatBox.appendChild(messageElement);
-                    nutritionChatBox.scrollTop = nutritionChatBox.scrollHeight;
-
-                    let fullText = '';
-                    const words = message.split(' ');
-                    for (let i = 0; i < words.length; i++) {
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                        fullText += words[i] + ' ';
-                        messageElement.textContent = fullText;
-                        nutritionChatBox.scrollTop = nutritionChatBox.scrollHeight;
-                    }
-                } else {
-                    messageElement.textContent = message;
-                    nutritionChatBox.appendChild(messageElement);
-                    nutritionChatBox.scrollTop = nutritionChatBox.scrollHeight;
-                }
+            function renderNutritionChat(history) {
+                nutritionChatBox.innerHTML = '';
+                history.forEach(message => {
+                    const messageEl = document.createElement('div');
+                    messageEl.className = `chat-message ${message.role === 'user' ? 'user ml-auto' : 'gemini mr-auto'}`;
+                    messageEl.innerHTML = marked.parse(message.parts[0].text);
+                    nutritionChatBox.appendChild(messageEl);
+                });
+                nutritionChatBox.scrollTop = nutritionChatBox.scrollHeight;
             }
 
-            function updateView(newView) {
-                currentPage = newView;
+            function renderRaceNutritionPlan(markdown) {
+                proposedRacePlanWrapper.innerHTML = marked.parse(markdown);
+                racePlanEditor.value = markdown;
+            }
+
+            function renderDailyNutritionPlan(markdown) {
+                proposedDailyDietWrapper.innerHTML = marked.parse(markdown);
+                dailyDietEditor.value = markdown;
+            }
+
+            // --- VIEW MANAGEMENT ---
+            function updateView(view) {
                 homeView.classList.add('hidden');
                 trainingPlanView.classList.add('hidden');
                 nutritionView.classList.add('hidden');
@@ -1273,115 +859,78 @@
                 detailsView.classList.add('hidden');
                 backButton.classList.add('hidden');
 
-                if (currentPage === 'home') {
-                    homeView.classList.remove('hidden');
-                    renderDashboardKPIs();
-                    renderFutureGoals();
-                    renderActivitiesList();
-                    getPerformanceAssessment();
-                } else if (currentPage === 'details') {
-                    detailsView.classList.remove('hidden');
-                    backButton.classList.remove('hidden');
-                    renderActivityDetails(selectedActivityData);
-                } else if (currentPage === 'plan') {
-                    trainingPlanView.classList.remove('hidden');
-                    getNewPlan();
-                    currentWeekOffset = 0;
-                    renderCurrentPlan();
-                } else if (currentPage === 'nutrition') {
-                    nutritionView.classList.remove('hidden');
-                    renderCurrentNutritionPlans();
-                    if (nutritionChatBox.children.length === 0) {
-                        appendMessage('gemini', "Hello! I'm your trail running nutrition coach. What are your dietary needs? Please mention any intolerances, allergies, or personal choices like vegetarian or vegan.");
-                    }
-                } else if (currentPage === 'settings') {
-                    settingsView.classList.remove('hidden');
+                if (paceChart) paceChart.destroy();
+
+                switch (view) {
+                    case 'home':
+                        homeView.classList.remove('hidden');
+                        renderDashboardKPIs();
+                        renderActivitiesTable(activitiesData);
+                        renderGoalsTable();
+                        break;
+                    case 'plan':
+                        trainingPlanView.classList.remove('hidden');
+                        renderCurrentPlan();
+                        break;
+                    case 'nutrition':
+                        nutritionView.classList.remove('hidden');
+                        renderNutritionChat(chatHistory);
+                        break;
+                    case 'settings':
+                        settingsView.classList.remove('hidden');
+                        break;
+                    case 'details':
+                        detailsView.classList.remove('hidden');
+                        backButton.classList.remove('hidden');
+                        renderPaceChart(selectedActivityData.laps);
+                        document.getElementById('details-title').textContent = selectedActivityData.name;
+                        document.getElementById('details-distance').textContent = `${selectedActivityData.distance.toFixed(2)} km`;
+                        document.getElementById('details-elevation').textContent = `${selectedActivityData.total_elevation_gain} m`;
+                        document.getElementById('details-time').textContent = formatTime(selectedActivityData.moving_time);
+                        document.getElementById('details-ngp').textContent = `${calculateNGP(selectedActivityData.laps)} min/km`;
+                        break;
                 }
+                currentPage = view;
             }
 
+            function showDetailsView(activity) {
+                selectedActivityData = activity;
+                updateView('details');
+            }
+            
             // --- EVENT LISTENERS ---
             function setupEventListeners() {
-                updateDataButton.addEventListener('click', () => {
-                    getPerformanceAssessment();
-                });
-
+                navHomeButton.addEventListener('click', () => updateView('home'));
+                navPlanButton.addEventListener('click', () => updateView('plan'));
+                navNutritionButton.addEventListener('click', () => updateView('nutrition'));
+                navSettingsButton.addEventListener('click', () => updateView('settings'));
                 backButton.addEventListener('click', () => {
-                    updateView('home');
-                });
-
-                navHomeButton.addEventListener('click', () => {
-                    updateView('home');
+                    const previousView = localStorage.getItem('previousView') || 'home';
+                    updateView(previousView);
                 });
                 
-                navPlanButton.addEventListener('click', () => {
-                    updateView('plan');
+                toggleGoalsButton.addEventListener('click', () => {
+                    const isHidden = goalsContent.style.display === 'none';
+                    goalsContent.style.display = isHidden ? 'block' : 'none';
+                    goalsChevron.textContent = isHidden ? '▲' : '▼';
                 });
 
-                navNutritionButton.addEventListener('click', () => {
-                    updateView('nutrition');
-                });
-                
-                navSettingsButton.addEventListener('click', () => {
-                    updateView('settings');
+                toggleAssessmentButton.addEventListener('click', () => {
+                    const isHidden = assessmentContentWrapper.style.display === 'none';
+                    assessmentContentWrapper.style.display = isHidden ? 'block' : 'none';
+                    assessmentChevron.textContent = isHidden ? '▲' : '▼';
                 });
 
-                toggleGoalsButton.addEventListener('click', () => toggleSection(toggleGoalsButton, goalsContent, goalsChevron));
-                toggleAssessmentButton.addEventListener('click', () => toggleSection(toggleAssessmentButton, assessmentContentWrapper, assessmentChevron));
-                toggleCurrentPlanButton.addEventListener('click', () => toggleSection(toggleCurrentPlanButton, currentPlanContent, currentPlanChevron));
-                toggleProposedPlanButton.addEventListener('click', () => toggleSection(toggleProposedPlanButton, proposedPlanContent, proposedPlanChevron));
-                toggleRaceNutritionButton.addEventListener('click', () => toggleSection(toggleRaceNutritionButton, raceNutritionContent, raceNutritionChevron));
-                toggleDailyNutritionButton.addEventListener('click', () => toggleSection(toggleDailyNutritionButton, dailyNutritionContent, dailyNutritionChevron));
-
-                refreshPlanButton.addEventListener('click', () => {
-                    updateView('plan');
+                toggleCurrentPlanButton.addEventListener('click', () => {
+                    const isHidden = currentPlanContent.style.display === 'none';
+                    currentPlanContent.style.display = isHidden ? 'block' : 'none';
+                    currentPlanChevron.textContent = isHidden ? '▲' : '▼';
                 });
 
-                coachToneSelect.addEventListener('change', (event) => {
-                    localStorage.setItem('coachTone', event.target.value);
-                    if (currentPage === 'home') {
-                        getPerformanceAssessment();
-                    }
-                });
-
-                updateStatsButton.addEventListener('click', () => {
-                    renderDashboardKPIs();
-                });
-
-                savePlanButton.addEventListener('click', () => {
-                    const editedContent = planEditor.value;
-                    const weekStart = getWeekStartDate(currentWeekOffset).toISOString().split('T')[0];
-                    currentPlans[weekStart] = editedContent;
-                    localStorage.setItem('currentPlans', JSON.stringify(currentPlans));
-                    renderCurrentPlan();
-                    toggleSection(toggleProposedPlanButton, proposedPlanContent, proposedPlanChevron);
-                    toggleSection(toggleCurrentPlanButton, currentPlanContent, currentPlanChevron);
-                    const messageBox = document.createElement('div');
-                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                    messageBox.innerHTML = `
-                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                            <p class="text-lg font-semibold mb-4">Plan saved successfully!</p>
-                            <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                        </div>
-                    `;
-                    document.body.appendChild(messageBox);
-                });
-
-                addToCalendarButton.addEventListener('click', () => {
-                    const messageBox = document.createElement('div');
-                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                    messageBox.innerHTML = `
-                        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm">
-                            <p class="text-sm font-semibold mb-4">To integrate with Google Calendar in a real application, you would need to:</p>
-                            <ul class="list-disc list-inside text-xs text-gray-700 space-y-2 mb-4">
-                                <li>Use Google's OAuth 2.0 to securely authenticate the user.</li>
-                                <li>Request the necessary permissions to access their calendar.</li>
-                                <li>Use the Google Calendar API to programmatically create events based on the workouts in your plan.</li>
-                            </ul>
-                            <p class="text-xs text-gray-500">This functionality cannot be fully demonstrated in this sandboxed environment, but the button represents the logical next step!</p>
-                            <button class="mt-4 bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">Got it</button>
-                        </div>
-                    `;
-                    document.body.appendChild(messageBox);
+                toggleProposedPlanButton.addEventListener('click', () => {
+                    const isHidden = proposedPlanContent.style.display === 'none';
+                    proposedPlanContent.style.display = isHidden ? 'block' : 'none';
+                    proposedPlanChevron.textContent = isHidden ? '▲' : '▼';
                 });
 
                 prevWeekButton.addEventListener('click', () => {
@@ -1393,191 +942,122 @@
                     currentWeekOffset++;
                     renderCurrentPlan();
                 });
+
+                toggleRaceNutritionButton.addEventListener('click', () => {
+                    const isHidden = raceNutritionContent.style.display === 'none';
+                    raceNutritionContent.style.display = isHidden ? 'block' : 'none';
+                    raceNutritionChevron.textContent = isHidden ? '▲' : '▼';
+                });
+
+                toggleDailyNutritionButton.addEventListener('click', () => {
+                    const isHidden = dailyNutritionContent.style.display === 'none';
+                    dailyNutritionContent.style.display = isHidden ? 'block' : 'none';
+                    dailyNutritionChevron.textContent = isHidden ? '▲' : '▼';
+                });
                 
-                nutritionChatSendButton.addEventListener('click', async () => {
-                    if (!apiKey) {
-                        appendMessage('gemini', "I can't chat right now. Please add your Gemini API key in the code.");
-                        return;
-                    }
-                    const userMessage = nutritionChatInput.value.trim();
-                    if (userMessage === '') return;
+                uploadDataInput.addEventListener('change', handleDataUpload, false);
 
-                    appendMessage('user', userMessage);
-                    nutritionChatInput.value = '';
+                // Re-enable these buttons now that we have a handler
+                saveUploadedDataButton.addEventListener('click', saveDataToProfile);
+                
+                // NEW: Event listener for the clear data button
+                clearUploadedDataButton.addEventListener('click', clearUploadedData);
 
-                    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
-
-                    const payload = { contents: chatHistory };
-                    
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        const result = await response.json();
-                        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (text) {
-                            appendMessage('gemini', text);
-                            chatHistory.push({ role: "model", parts: [{ text: text }] });
-                        }
-                    } catch (error) {
-                        console.error('Chat error:', error);
-                        appendMessage('gemini', "I'm sorry, I seem to be having a network issue. Please try again.");
-                    }
-                });
-
-                generateRacePlanButton.addEventListener('click', generateRaceNutrition);
-                generateDailyDietButton.addEventListener('click', generateDailyDiet);
-
-                saveRacePlanButton.addEventListener('click', () => {
-                    raceNutritionPlans.latest = racePlanEditor.value;
-                    localStorage.setItem('raceNutritionPlans', JSON.stringify(raceNutritionPlans));
-                    renderCurrentNutritionPlans();
-                    const messageBox = document.createElement('div');
-                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                    messageBox.innerHTML = `
-                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                            <p class="text-lg font-semibold mb-4">Race nutrition plan saved!</p>
-                            <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                        </div>
-                    `;
-                    document.body.appendChild(messageBox);
-                });
-
-                saveDailyDietButton.addEventListener('click', () => {
-                    dailyNutritionPlans.latest = dailyDietEditor.value;
-                    localStorage.setItem('dailyNutritionPlans', JSON.stringify(dailyNutritionPlans));
-                    renderCurrentNutritionPlans();
-                    const messageBox = document.createElement('div');
-                    messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                    messageBox.innerHTML = `
-                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                            <p class="text-lg font-semibold mb-4">Daily diet plan saved!</p>
-                            <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                        </div>
-                    `;
-                    document.body.appendChild(messageBox);
-                });
-
-                uploadDataInput.addEventListener('change', (event) => {
-                    const file = event.target.files[0];
-                    if (!file) {
-                        uploadedDataSection.classList.add('hidden');
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const data = new Uint8Array(e.target.result);
-                            const workbook = XLSX.read(data, { type: 'array' });
-                            const firstSheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[firstSheetName];
-                            const jsonActivities = XLSX.utils.sheet_to_json(worksheet);
-
-                            const newActivities = jsonActivities.map(row => {
-                                const laps = [];
-                                const distance = parseFloat(row.distance) || 0;
-                                const elevation = parseFloat(row.elevation_gain) || 0;
-                                const time = parseFloat(row.total_time) || 0;
-                                if (distance > 0 && time > 0) {
-                                    for (let i = 0; i < 5; i++) {
-                                        laps.push({
-                                            distance: distance / 5,
-                                            elevation_gain: elevation / 5,
-                                            moving_time: time / 5
-                                        });
-                                    }
-                                }
-                                
-                                return {
-                                    name: row.name || 'Unnamed Activity',
-                                    date: row.date || new Date().toISOString(),
-                                    distance: distance,
-                                    total_elevation_gain: elevation,
-                                    moving_time: time,
-                                    type: row.type || 'Run',
-                                    laps: laps
-                                };
-                            });
-                            
-                            dataEditor.value = JSON.stringify(newActivities, null, 2);
-                            uploadedDataSection.classList.remove('hidden');
-
-                        } catch (error) {
-                            console.error("Error parsing file:", error);
-                            dataEditor.value = "Error parsing file. Please ensure it is a valid Excel/CSV format with columns for 'name', 'distance', 'elevation_gain', and 'total_time'.";
-                            uploadedDataSection.classList.remove('hidden');
-                        }
-                    };
-                    reader.readAsArrayBuffer(file);
-                });
-
-                saveUploadedDataButton.addEventListener('click', async () => {
-                    if (!db || !userId) {
-                        showDialog('Error', 'Not authenticated. Please try again.');
-                        return;
-                    }
-                    
-                    try {
-                        const parsedData = JSON.parse(dataEditor.value);
-                        if (!Array.isArray(parsedData)) {
-                            throw new Error("Data must be a valid JSON array.");
-                        }
-                        const docRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
-                        await setDoc(docRef, { activities: parsedData });
-                        showDialog('Success', 'Activity data saved successfully!');
-                    } catch (error) {
-                        console.error("Error saving data:", error);
-                        showDialog('Error', `Failed to save data: ${error.message}`);
-                    }
-                });
+                updateStatsButton.addEventListener('click', renderDashboardKPIs);
             }
-
-            function startDataListener() {
-                if (!db || !userId) {
-                    console.warn("Firestore or User ID not available for data listener.");
+            
+            // --- DATA HANDLERS ---
+            function handleDataUpload(evt) {
+                const file = evt.target.files[0];
+                if (!file) {
                     return;
                 }
-                const dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/activities`);
-                onSnapshot(dataRef, (doc) => {
-                    if (doc.exists()) {
-                        activitiesData = doc.data().activities || [];
+                const uploadedDataSection = document.getElementById('uploaded-data-section');
+                const dataTableContainer = document.getElementById('data-table-container');
+                dataTableContainer.innerHTML = 'Parsing file...';
+                uploadedDataSection.classList.remove('hidden');
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = e.target.result;
+                    let workbook = XLSX.read(data, {type: 'binary'});
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+
+                    if (json && json.length > 0) {
+                        displayDataAsTable(json, dataTableContainer);
                     } else {
-                        activitiesData = [];
+                        dataTableContainer.innerHTML = 'Failed to parse file or file is empty.';
                     }
-                    renderDashboardKPIs();
-                    renderActivitiesList();
-                    getPerformanceAssessment();
-                }, (error) => {
-                    console.error("Error fetching Firestore data:", error);
+                };
+                reader.onerror = function(e) {
+                    dataTableContainer.innerHTML = 'Error reading file.';
+                };
+                reader.readAsBinaryString(file);
+            }
+
+            function displayDataAsTable(data, container) {
+                container.innerHTML = '';
+                const table = document.createElement('table');
+                table.className = "min-w-full divide-y divide-gray-200";
+
+                // Headers
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                data[0].forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    th.className = "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
+                    headerRow.appendChild(th);
                 });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                // Body
+                const tbody = document.createElement('tbody');
+                data.slice(1).forEach(rowArray => {
+                    const tr = document.createElement('tr');
+                    tr.className = "bg-white divide-y divide-gray-200";
+                    rowArray.forEach(cellData => {
+                        const td = document.createElement('td');
+                        td.textContent = cellData;
+                        td.setAttribute('contenteditable', 'true');
+                        td.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-900";
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                container.appendChild(table);
             }
 
-            function showDialog(title, message) {
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-[100]';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm text-center">
-                        <p class="text-lg font-semibold mb-4">${title}</p>
-                        <p class="text-sm mb-4">${message}</p>
-                        <button class="bg-red-600 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentElement.parentElement.remove()">OK</button>
-                    </div>
-                `;
-                document.body.appendChild(messageBox);
+            function saveDataToProfile() {
+                // Future functionality to save the edited table data
+                alert('This functionality is not yet implemented.');
+            }
+            
+            // NEW: Function to clear the uploaded data table
+            function clearUploadedData() {
+                const uploadedDataSection = document.getElementById('uploaded-data-section');
+                const dataTableContainer = document.getElementById('data-table-container');
+                dataTableContainer.innerHTML = '';
+                uploadedDataSection.classList.add('hidden');
+                // Optional: Clear the file input so the same file can be re-uploaded
+                const fileInput = document.getElementById('upload-data-input');
+                fileInput.value = '';
             }
 
-            const today = new Date();
-            dateSelector.valueAsDate = today;
+            // --- FIREBASE DATA LISTENERS ---
+            function startDataListener() {
+                // Placeholder for future Firebase functionality
+            }
 
-            const savedTone = getCoachTone();
-            coachToneSelect.value = savedTone;
-
-            renderFutureGoals();
-            renderCurrentPlan();
-            renderCurrentNutritionPlans();
+            // Initial view setup
+            updateView(currentPage);
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 </body>
 </html>
